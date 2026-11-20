@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/livro.dart';
+import 'tela_cadastro.dart';
 
 class TelaInicial extends StatefulWidget {
   const TelaInicial({super.key});
@@ -9,10 +10,47 @@ class TelaInicial extends StatefulWidget {
 }
 
 class _TelaInicialState extends State<TelaInicial> {
-  // Lista que armazenará os livros em memória (será persistida na Etapa 4)
   final List<Livro> _livros = [];
 
-  // Define uma cor diferente para cada status de leitura
+  Future<void> _abrirTelaCadastro() async {
+    final Livro? novoLivro = await Navigator.push<Livro>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const TelaCadastro(),
+      ),
+    );
+
+    if (novoLivro != null) {
+      setState(() {
+        _livros.add(novoLivro);
+      });
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Livro "${novoLivro.titulo}" adicionado com sucesso!'),
+          backgroundColor: Colors.green.shade700,
+        ),
+      );
+    }
+  }
+
+  void _removerLivro(int index) {
+    final livroRemovido = _livros[index];
+
+    setState(() {
+      _livros.removeAt(index);
+    });
+
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Livro "${livroRemovido.titulo}" removido.'),
+      ),
+    );
+  }
+
   Color _corDoStatus(String status) {
     switch (status) {
       case 'Lendo':
@@ -25,7 +63,6 @@ class _TelaInicialState extends State<TelaInicial> {
     }
   }
 
-  // Define um ícone simples para cada status de leitura
   IconData _iconeDoStatus(String status) {
     switch (status) {
       case 'Lendo':
@@ -120,14 +157,17 @@ class _TelaInicialState extends State<TelaInicial> {
                       ],
                     ),
                     isThreeLine: true,
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete_outline, color: Colors.red),
+                      tooltip: 'Remover livro',
+                      onPressed: () => _removerLivro(index),
+                    ),
                   ),
                 );
               },
             ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Navegação para a TelaCadastro será conectada na Etapa 2
-        },
+        onPressed: _abrirTelaCadastro,
         tooltip: 'Adicionar livro',
         child: const Icon(Icons.add),
       ),
