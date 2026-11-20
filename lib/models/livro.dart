@@ -8,4 +8,20 @@ class Livro {
     required this.autor,
     required this.status,
   });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'titulo': titulo,
+      'autor': autor,
+      'status': status,
+    };
+  }
+
+  factory Livro.fromMap(Map<String, dynamic> map) {
+    return Livro(
+      titulo: map['titulo'] ?? '',
+      autor: map['autor'] ?? '',
+      status: map['status'] ?? 'Quero ler',
+    );
+  }
 }

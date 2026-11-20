@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/livro.dart';
 import 'tela_cadastro.dart';
 
@@ -10,7 +12,38 @@ class TelaInicial extends StatefulWidget {
 }
 
 class _TelaInicialState extends State<TelaInicial> {
+  static const String _chaveStorage = 'lista_livros';
   final List<Livro> _livros = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _carregarLivros();
+  }
+
+  Future<void> _carregarLivros() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? livrosJson = prefs.getString(_chaveStorage);
+
+    if (livrosJson != null && livrosJson.isNotEmpty) {
+      final List<dynamic> listaDecodificada = jsonDecode(livrosJson);
+      setState(() {
+        _livros.clear();
+        _livros.addAll(
+          listaDecodificada.map(
+            (item) => Livro.fromMap(Map<String, dynamic>.from(item)),
+          ),
+        );
+      });
+    }
+  }
+
+Future<void> _salvarLivrosNoStorage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final listaMapeada = _livros.map((livro) => livro.toMap()).toList();
+    final String livrosJson = jsonEncode(listaMapeada);
+    await prefs.setString(_chaveStorage, livrosJson);
+  }
 
   Future<void> _abrirTelaCadastro() async {
     final Livro? novoLivro = await Navigator.push<Livro>(
@@ -24,6 +57,7 @@ class _TelaInicialState extends State<TelaInicial> {
       setState(() {
         _livros.add(novoLivro);
       });
+      await _salvarLivrosNoStorage();
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -36,13 +70,15 @@ class _TelaInicialState extends State<TelaInicial> {
     }
   }
 
-  void _removerLivro(int index) {
+  Future<void> _removerLivro(int index) async {
     final livroRemovido = _livros[index];
 
     setState(() {
       _livros.removeAt(index);
     });
+    await _salvarLivrosNoStorage();
 
+    if (!mounted) return;
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
