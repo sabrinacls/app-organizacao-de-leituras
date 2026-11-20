@@ -1,0 +1,136 @@
+import 'package:flutter/material.dart';
+import '../models/livro.dart';
+
+class TelaInicial extends StatefulWidget {
+  const TelaInicial({super.key});
+
+  @override
+  State<TelaInicial> createState() => _TelaInicialState();
+}
+
+class _TelaInicialState extends State<TelaInicial> {
+  // Lista que armazenará os livros em memória (será persistida na Etapa 4)
+  final List<Livro> _livros = [];
+
+  // Define uma cor diferente para cada status de leitura
+  Color _corDoStatus(String status) {
+    switch (status) {
+      case 'Lendo':
+        return Colors.orange.shade700;
+      case 'Concluído':
+        return Colors.green.shade700;
+      case 'Quero ler':
+      default:
+        return Colors.blue.shade700;
+    }
+  }
+
+  // Define um ícone simples para cada status de leitura
+  IconData _iconeDoStatus(String status) {
+    switch (status) {
+      case 'Lendo':
+        return Icons.menu_book;
+      case 'Concluído':
+        return Icons.check_circle;
+      case 'Quero ler':
+      default:
+        return Icons.bookmark_border;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Colors.white,
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Minha Lista de Livros',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              'Sabrina Clemente da Silva',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
+            ),
+          ],
+        ),
+      ),
+      body: _livros.isEmpty
+          ? const Center(
+              child: Padding(
+                padding: EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.library_books, size: 64, color: Colors.grey),
+                    SizedBox(height: 16),
+                    Text(
+                      'Nenhum livro cadastrado ainda.',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black54,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Toque no botão "+" abaixo para adicionar o seu primeiro livro.',
+                      style: TextStyle(fontSize: 14, color: Colors.black45),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.all(8.0),
+              itemCount: _livros.length,
+              itemBuilder: (context, index) {
+                final livro = _livros[index];
+                final corStatus = _corDoStatus(livro.status);
+
+                return Card(
+                  elevation: 1,
+                  margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: corStatus.withValues(alpha: 0.15),
+                      child: Icon(_iconeDoStatus(livro.status), color: corStatus),
+                    ),
+                    title: Text(
+                      livro.titulo,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Autor: ${livro.autor}'),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Status: ${livro.status}',
+                          style: TextStyle(
+                            color: corStatus,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    isThreeLine: true,
+                  ),
+                );
+              },
+            ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Navegação para a TelaCadastro será conectada na Etapa 2
+        },
+        tooltip: 'Adicionar livro',
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+}
